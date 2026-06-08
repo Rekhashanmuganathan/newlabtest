@@ -32,6 +32,15 @@ To run with the provided test input and capture output:
 marklist.exe < tests\test_input.txt > tests\actual_output.txt
 ```
 
+Built-in tests
+- You can run the built-in self-tests (no external files needed) by piping the word `TEST` to the program. On Windows:
+
+```
+echo TEST | marklist.exe
+```
+
+The program will report PASS/FAIL for each internal testcase.
+
 Test
 Use the included `run_tests.bat` on Windows to compile, run, and compare output:
 
