@@ -41,6 +41,18 @@ echo TEST | marklist.exe
 
 The program will report PASS/FAIL for each internal testcase.
 
+File mode
+- The program supports a simple file mode which reads student records
+	from `input.txt` and writes a formatted marklist to `output.txt`.
+	To use it, create `input.txt` in the workspace with the same format
+	as `tests/test_input.txt` (first line: number of students). Then run:
+
+```
+echo FILE | marklist.exe
+```
+
+After running, check `output.txt` for the generated marklist.
+
 Test
 Use the included `run_tests.bat` on Windows to compile, run, and compare output:
 

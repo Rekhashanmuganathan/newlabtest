@@ -9,9 +9,15 @@
     program-id. MARKLIST.
     author. GitHub Copilot.
 
-    *> Environment division: target environment and file controls
-    *> (none needed for this simple console program).
-    environment division.
+       *> Environment division: file-control for simple file operations
+       *> This program supports a `FILE` mode that reads from a static
+       *> `input.txt` and writes the marklist to `output.txt` in the
+       *> current directory.
+       environment division.
+       input-output section.
+       file-control.
+           select in-file assign to "input.txt".
+           select out-file assign to "output.txt".
 
     *> Data division: declarations for variables and tables used
     *> throughout the program.
@@ -86,6 +92,16 @@
              05 TEST-GRADE-ENTRIES occurs 10 times pic x(2) value spaces.
          01 ACT-TOTAL           pic 9(4) value 0.
 
+        *> File section: records used to read from and write to files
+        file section.
+        fd in-file.
+        01 IN-FILE-REC        pic x(200).
+
+        fd out-file.
+        01 OUT-FILE-REC       pic x(200).
+
+        77 FILE-STATUS        pic xx value spaces.
+
        *> Procedure division: program logic is organized into
        *> clearly named paragraphs. `main-logic` handles input,
        *> parsing, calculation and dispatch to display routines.
@@ -102,6 +118,101 @@
                move 'Y' to test-mode
                perform run-self-tests
                stop run
+           end-if
+           *> If user types FILE (case-insensitive) we operate in file
+           *> mode: read from input.txt and write output to output.txt.
+           if function upper-case(in-line) = "FILE" then
+               display "Running in FILE mode: reading input.txt, writing output.txt"
+               open input in-file
+               if file-status = "00" then
+                   read in-file into in-line at end
+                       display "Input file is empty or missing first line." 
+                       close in-file
+                       stop run
+                   end-read
+                   *> first line should contain number of students
+                   unstring in-line delimited by all spaces into f-roll
+                   if function numeric-value(f-roll) > 0
+                       compute num-students = function numeric-value(f-roll)
+                   else
+                       move 0 to num-students
+                   end-if
+                   open output out-file
+                   perform varying idx from 1 by 1 until idx > num-students
+                       read in-file into in-line at end
+                           display "Unexpected end of input file." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       unstring in-line delimited by ","
+                           into f-roll f-name f-m1 f-m2 f-m3 f-m4 f-m5
+                       move function numval(f-roll) to roll-entries (idx)
+                       move f-name to name-entries (idx)
+                       move function numval(f-m1) to m1-entries (idx)
+                       move function numval(f-m2) to m2-entries (idx)
+                       move function numval(f-m3) to m3-entries (idx)
+                       move function numval(f-m4) to m4-entries (idx)
+                       move function numval(f-m5) to m5-entries (idx)
+                       compute total-entries (idx) = m1-entries (idx) + m2-entries (idx) + m3-entries (idx) + m4-entries (idx) + m5-entries (idx)
+                       compute percent-entries (idx) = total-entries (idx) / 5
+                       if percent-entries (idx) >= 75 then
+                           move "A" to grade-entries (idx)
+                       else if percent-entries (idx) >= 60 then
+                           move "B" to grade-entries (idx)
+                       else if percent-entries (idx) >= 50 then
+                           move "C" to grade-entries (idx)
+                       else if percent-entries (idx) >= 40 then
+                           move "D" to grade-entries (idx)
+                       else
+                           move "F" to grade-entries (idx)
+                       end-if
+                   end-perform
+                   *> Write header and records to output file
+                   move "------------------------------------------------------------" to OUT-FILE-REC
+                   write OUT-FILE-REC
+                   move "                          STUDENT MARKLIST                    " to OUT-FILE-REC
+                   write OUT-FILE-REC
+                   move "------------------------------------------------------------" to OUT-FILE-REC
+                   write OUT-FILE-REC
+                   move "Roll   Name                          M1  M2  M3  M4  M5  Total  Percent  Grade" to OUT-FILE-REC
+                   write OUT-FILE-REC
+                   move "----   ---------------------------  --- --- --- --- ---  -----  -------  -----" to OUT-FILE-REC
+                   write OUT-FILE-REC
+                   perform varying idx from 1 by 1 until idx > num-students
+                       move percent-entries (idx) to percent-disp
+                       string roll-entries (idx) delimited by size
+                              " " delimited by size
+                              name-entries (idx) delimited by size
+                              " " delimited by size
+                              m1-entries (idx) delimited by size
+                              "," delimited by size
+                              m2-entries (idx) delimited by size
+                              "," delimited by size
+                              m3-entries (idx) delimited by size
+                              "," delimited by size
+                              m4-entries (idx) delimited by size
+                              "," delimited by size
+                              m5-entries (idx) delimited by size
+                              "," delimited by size
+                              total-entries (idx) delimited by size
+                              "," delimited by size
+                              percent-disp delimited by size
+                              " " delimited by size
+                              grade-entries (idx) delimited by size
+                              into OUT-FILE-REC
+                       write OUT-FILE-REC
+                   end-perform
+                   move "------------------------------------------------------------" to OUT-FILE-REC
+                   write OUT-FILE-REC
+                   close in-file
+                   close out-file
+                   display "Wrote marklist to output.txt"
+                   stop run
+               else
+                   display "Unable to open input.txt"
+                   stop run
+               end-if
            end-if
            unstring in-line delimited by all spaces into f-ROLL
            if function numeric-value(f-ROLL) > 0
