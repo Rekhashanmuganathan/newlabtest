@@ -138,22 +138,69 @@
                        move 0 to num-students
                    end-if
                    open output out-file
+                   *> For non-CSV input, each student's fields are on
+                   *> separate lines in `input.txt` in this order:
+                   *> roll (single line), name (single line), m1, m2, m3, m4, m5
                    perform varying idx from 1 by 1 until idx > num-students
+                       *> Read roll
                        read in-file into in-line at end
-                           display "Unexpected end of input file." 
+                           display "Unexpected end of input file while reading roll." 
                            close in-file
                            close out-file
                            stop run
                        end-read
-                       unstring in-line delimited by ","
-                           into f-roll f-name f-m1 f-m2 f-m3 f-m4 f-m5
-                       move function numval(f-roll) to roll-entries (idx)
-                       move f-name to name-entries (idx)
-                       move function numval(f-m1) to m1-entries (idx)
-                       move function numval(f-m2) to m2-entries (idx)
-                       move function numval(f-m3) to m3-entries (idx)
-                       move function numval(f-m4) to m4-entries (idx)
-                       move function numval(f-m5) to m5-entries (idx)
+                       move function numval(in-line) to roll-entries (idx)
+
+                       *> Read name
+                       read in-file into in-line at end
+                           display "Unexpected end of input file while reading name." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       move in-line to name-entries (idx)
+
+                       *> Read five marks (one per line)
+                       read in-file into in-line at end
+                           display "Unexpected end of input file while reading m1." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       move function numval(in-line) to m1-entries (idx)
+
+                       read in-file into in-line at end
+                           display "Unexpected end of input file while reading m2." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       move function numval(in-line) to m2-entries (idx)
+
+                       read in-file into in-line at end
+                           display "Unexpected end of input file while reading m3." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       move function numval(in-line) to m3-entries (idx)
+
+                       read in-file into in-line at end
+                           display "Unexpected end of input file while reading m4." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       move function numval(in-line) to m4-entries (idx)
+
+                       read in-file into in-line at end
+                           display "Unexpected end of input file while reading m5." 
+                           close in-file
+                           close out-file
+                           stop run
+                       end-read
+                       move function numval(in-line) to m5-entries (idx)
+
                        compute total-entries (idx) = m1-entries (idx) + m2-entries (idx) + m3-entries (idx) + m4-entries (idx) + m5-entries (idx)
                        compute percent-entries (idx) = total-entries (idx) / 5
                        if percent-entries (idx) >= 75 then
